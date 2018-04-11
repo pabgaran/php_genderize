@@ -24,7 +24,8 @@ class Recognizer {
     protected $_supported_countries = null;
     protected $_supported_languages = null;
 
-    public function __construct($names = null, $country_id = null, $language_id = null, $api_key = null) {
+    public function __construct($names = null, $country_id = null, $language_id = null, $api_key = null)
+    {
         $this->set_names($names)
             ->set_country_id($country_id)
             ->set_language_id($language_id)
@@ -37,8 +38,8 @@ class Recognizer {
      * @return \Genderize\Base\Name
      * @throws \Genderize\Exception\NullResponseException
      */
-    public function recognize($return_as_object = true) {
-
+    public function recognize($return_as_object = true)
+    {
         $url = $this->_build_url();
         $response = json_decode(file_get_contents($url), true);
         if (is_null($response)) {
@@ -49,7 +50,7 @@ class Recognizer {
             //If an array of names were passed in, return an array of Name objects
             if (is_array($this->get_names())) {
                 $nameObjects = array();
-                foreach($response as $nameresponse) {
+                foreach ($response as $nameresponse) {
                     $nameObj = new Name();
 
                     foreach (['name', 'gender', 'probability', 'count', 'country_id'] as $field) {
@@ -61,6 +62,7 @@ class Recognizer {
 
                     $nameObjects[] = $nameObj;
                 }
+                
                 return $nameObjects;
             } else {
                 //DEPRECATED: if a single name was passed in, not as part of an array, return a single Name object
@@ -79,11 +81,17 @@ class Recognizer {
             //If an array of names were passed in, return an array of name=>gender responses
             if (is_array($this->get_names())) {
                 $genders = array();
-                foreach($response as $nameresponse) {
+                foreach ($response as $nameresponse) {
                     if (isset($nameresponse['name']) && $nameresponse['name']) {
                         $genderresponse = array('name' => $nameresponse['name']);
                         if (isset($nameresponse['gender'])) {
                             $genderresponse['gender'] = $nameresponse['gender'];
+                        }
+                        if (isset($nameresponse['probability'])) {
+                            $genderresponse['probability'] = $nameresponse['probability'];
+                        }
+                        if (isset($nameresponse['count'])) {
+                            $genderresponse['count'] = $nameresponse['count'];
                         }
                         $genders[] = $genderresponse;
                     }
@@ -100,8 +108,8 @@ class Recognizer {
      * Builds the valid genderize.io API url.
      * @return string
      */
-    protected function _build_url() {
-
+    protected function _build_url()
+    {
         $params = array_filter([
             'name' => $this->_names,
             'country_id' => $this->_country_id,
@@ -113,6 +121,7 @@ class Recognizer {
                 return $v;
             }
         });
+        
         //Only pass apikey if there is one set
         if ($api_key = $this->get_api_key()) {
             $params['apikey'] = trim($api_key);
@@ -127,7 +136,8 @@ class Recognizer {
      * @param string $country_id
      * @return boolean
      */
-    protected function is_country_supported($country_id) {
+    protected function is_country_supported($country_id)
+    {
         if (is_null($this->_supported_countries)) {
             $Countries = new Countries();
             $this->_supported_countries = $Countries->get();
@@ -142,17 +152,20 @@ class Recognizer {
      * @param string $language_id
      * @return boolean
      */
-    protected function is_language_supported($language_id) {
+    protected function is_language_supported($language_id)
+    {
         if (is_null($this->_supported_languages)) {
             $Languages = new Languages();
             $this->_supported_languages = $Languages->get();
         }
+        
         return in_array($language_id, $this->_supported_languages);
     }
 
     // <editor-fold desc="Setters and getters">
 
-    public function set_country_id($country_id, $check_if_valid = true) {
+    public function set_country_id($country_id, $check_if_valid = true)
+    {
         $country_id = strtoupper(trim($country_id));
         if ($check_if_valid) {
             if (!empty($country_id) && !$this->is_country_supported($country_id)) {
@@ -160,14 +173,17 @@ class Recognizer {
             }
         }
         $this->_country_id = $country_id;
+        
         return $this;
     }
 
-    public function get_country_id() {
+    public function get_country_id()
+    {
         return $this->_country_id;
     }
 
-    public function set_language_id($language_id, $check_if_valid = true) {
+    public function set_language_id($language_id, $check_if_valid = true)
+    {
         $language_id = strtolower(trim($language_id));
         if ($check_if_valid) {
             if (!empty($language_id) && !$this->is_language_supported($language_id)) {
@@ -175,27 +191,33 @@ class Recognizer {
             }
         }
         $this->_language_id = $language_id;
+        
         return $this;
     }
 
-    public function get_language_id() {
+    public function get_language_id()
+    {
         return $this->_language_id;
     }
 
-    public function set_names($names) {
+    public function set_names($names)
+    {
         $this->_names = $names;
         return $this;
     }
 
-    public function get_names() {
+    public function get_names()
+    {
         return $this->_names;
     }
 
-    public function set_api_key($api_key) {
+    public function set_api_key($api_key)
+    {
         $this->_api_key = $api_key;
     }
 
-    public function get_api_key() {
+    public function get_api_key()
+    {
         return $this->_api_key;
     }
 
